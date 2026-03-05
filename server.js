@@ -56,6 +56,73 @@ app.use("/api/workout", require("./routes/workout"));
 app.use("/api/analytics", require("./routes/analytics"));
 app.use("/api/milestones", require("./routes/milestones"));
 
+// Root landing page for the API
+app.get("/", (req, res) => {
+  const html = `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Wait | Backend Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    h1 { font-family: 'Montserrat', sans-serif; }
+    .glow { box-shadow: 0 0 50px rgba(34, 197, 94, 0.15); }
+    .bg-grid { background-image: radial-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 1px); background-size: 32px 32px; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+  <div class="absolute inset-0 bg-grid opacity-60"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-500/10 rounded-full blur-[100px] -z-10"></div>
+  
+  <div class="max-w-2xl w-full bg-slate-800/40 backdrop-blur-2xl border border-slate-700/50 p-10 md:p-14 rounded-[32px] text-center glow relative z-10 transition-transform duration-500 hover:scale-[1.01]">
+    
+    <div class="w-20 h-20 bg-gradient-to-br from-green-500/20 to-emerald-600/20 rounded-2xl mx-auto flex items-center justify-center border border-green-500/30 mb-8 shadow-inner">
+      <span class="text-4xl drop-shadow-md">⚔️</span>
+    </div>
+    
+    <h1 class="text-4xl md:text-5xl font-black mb-5 bg-gradient-to-r from-white via-green-300 to-emerald-500 bg-clip-text text-transparent">
+      The Wait Engine
+    </h1>
+    
+    <p class="text-slate-400 text-lg md:text-xl font-medium mb-12">
+      Backend API is actively shielding your discipline and growth.
+    </p>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-semibold text-slate-300">
+      <div class="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-colors hover:border-green-500/30">
+        <span class="text-green-400 mb-1 text-xs uppercase tracking-wider">Status</span>
+        <span class="text-white text-base">Active</span>
+      </div>
+      <div class="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-colors hover:border-green-500/30">
+        <span class="text-green-400 mb-1 text-xs uppercase tracking-wider">Version</span>
+        <span class="text-white text-base">1.0.0</span>
+      </div>
+      <div class="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-colors hover:border-green-500/30">
+        <span class="text-green-400 mb-1 text-xs uppercase tracking-wider">Environment</span>
+        <span class="text-white text-base">Production</span>
+      </div>
+      <div class="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-4 flex flex-col items-center justify-center transition-colors hover:border-green-500/30">
+        <span class="text-green-400 mb-1 text-xs uppercase tracking-wider">Database</span>
+        <span class="text-white text-base">MongoDB</span>
+      </div>
+    </div>
+    
+    <div class="mt-12 pt-8 border-t border-slate-700/50">
+      <a href="/api/health" class="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-slate-900 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(34,197,94,0.4)]">
+        Initialize Health Check
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</body>
+</html>`;
+  res.send(html);
+});
+
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({
