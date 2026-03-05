@@ -32,18 +32,16 @@ router.post(
       const { name, email, password, age, goal } = req.body;
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "এই ইমেইলে ইতিমধ্যে অ্যাকাউন্ট আছে",
+        });
       }
       const user = await User.create({ name, email, password, age, goal });
       const token = generateToken(user._id);
       res.status(201).json({
         success: true,
-        message: "🎉 স্বাগতম সাধক! তোমার যাত্রা শুরু হলো",
+        message: "আপনার অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে। স্বাগতম!",
         token,
         user: {
           id: user._id,
@@ -84,7 +82,7 @@ router.post(
       const token = generateToken(user._id);
       res.json({
         success: true,
-        message: "✅ লগইন সফল হয়েছে",
+        message: "সফলভাবে লগইন করা হয়েছে",
         token,
         user: {
           id: user._id,

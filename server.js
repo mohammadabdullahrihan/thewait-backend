@@ -26,7 +26,7 @@ const limiter = rateLimit({
   max: 200,
   message: {
     success: false,
-    message: "অনেক বেশি রিকোয়েস্ট! একটু পরে আবার চেষ্টা করুন।",
+    message: "অনুরোধের সীমা অতিক্রম করেছে। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।",
   },
 });
 app.use("/api/", limiter);
@@ -53,7 +53,7 @@ app.use("/api/analytics", require("./routes/analytics"));
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
-    message: "🌟 অপেক্ষা API চালু আছে",
+    message: "API Service is active",
     timestamp: new Date().toISOString(),
   });
 });
@@ -68,7 +68,7 @@ app.use((err, req, res, next) => {
 });
 
 // 404 handler
-app.use("*", (req, res) => {
+app.use((req, res) => {
   res
     .status(404)
     .json({ success: false, message: "এই রাস্তা খুঁজে পাওয়া যায়নি" });
@@ -76,8 +76,8 @@ app.use("*", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 অপেক্ষা সার্ভার চালু - Port: ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+  console.log(`Server started on Port: ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV}`);
 });
 
 module.exports = app;
