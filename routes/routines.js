@@ -7,9 +7,11 @@ const { protect } = require("../middleware/auth");
 // @route   GET /api/routines/:date
 router.get("/:date", protect, async (req, res) => {
   try {
+    const { name } = req.query;
     let routine = await Routine.findOne({
       userId: req.user.id,
       date: req.params.date,
+      name: name || "Daily",
     });
     if (!routine) {
       // Return default template routine
@@ -101,8 +103,12 @@ router.get("/:date", protect, async (req, res) => {
 // @route   POST /api/routines
 router.post("/", protect, async (req, res) => {
   try {
-    const { date, tasks } = req.body;
-    let routine = await Routine.findOne({ userId: req.user.id, date });
+    const { date, tasks, name } = req.body;
+    let routine = await Routine.findOne({
+      userId: req.user.id,
+      date,
+      name: name || "Daily",
+    });
     if (routine) {
       routine.tasks = tasks;
       const completedTasks = tasks.filter((t) => t.completed).length;
@@ -118,6 +124,7 @@ router.post("/", protect, async (req, res) => {
       routine = await Routine.create({
         userId: req.user.id,
         date,
+        name: name || "Daily",
         tasks,
         completionRate,
       });
@@ -138,10 +145,11 @@ router.post("/", protect, async (req, res) => {
 // @route   PUT /api/routines/:date/task/:taskId
 router.put("/:date/task/:taskId", protect, async (req, res) => {
   try {
-    const { completed } = req.body;
+    const { completed, name } = req.body;
     const routine = await Routine.findOne({
       userId: req.user.id,
       date: req.params.date,
+      name: name || "Daily",
     });
     if (!routine) {
       return res
@@ -166,6 +174,47 @@ router.put("/:date/task/:taskId", protect, async (req, res) => {
       await User.findByIdAndUpdate(req.user.id, { $inc: { experience: 5 } });
     }
     res.json({ success: true, routine });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   DELETE /api/routines/:date/task/:taskId
+router.delete("/:date/task/:taskId", protect, async (req, res) => {
+  try {
+    const { name } = req.query;
+    const routine = await Routine.findOne({
+      userId: req.user.id,
+      date: req.params.date,
+      name: name || "Daily",
+    });
+    if (!routine) {
+      return res
+        .status(404)
+        .json({ success: false, message: "রুটিন পাওয়া যায়নি" });
+    }
+    routine.tasks = routine.tasks.filter(
+      (t) => t._id.toString() !== req.params.taskId,
+    );
+    const completedTasks = routine.tasks.filter((t) => t.completed).length;
+    routine.completionRate = routine.tasks.length
+      ? Math.round((completedTasks / routine.tasks.length) * 100)
+      : 0;
+    await routine.save();
+    res.json({ success: true, routine });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   GET /api/routines/:date/list
+router.get("/:date/list/all", protect, async (req, res) => {
+  try {
+    const routines = await Routine.find({
+      userId: req.user.id,
+      date: req.params.date,
+    }).select("name completionRate");
+    res.json({ success: true, routines });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

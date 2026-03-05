@@ -5,17 +5,23 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const connectDB = require("./config/db");
-
 const app = express();
-
-// Connect to MongoDB
-connectDB();
+app.set("trust proxy", 1); // Enable for Vercel reversed proxy
+// Connect to MongoDB middleware for Serverless
+app.use(async (req, res, next) => {
+  if (process.env.NODE_ENV !== "test") {
+    await connectDB();
+  }
+  next();
+});
 
 // Security middleware
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL
+      ? process.env.FRONTEND_URL.split(",")
+      : "http://localhost:5173",
     credentials: true,
   }),
 );
@@ -23,7 +29,7 @@ app.use(
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200,
+  max: 500,
   message: {
     success: false,
     message: "অনুরোধের সীমা অতিক্রম করেছে। অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।",
@@ -48,6 +54,7 @@ app.use("/api/journal", require("./routes/journal"));
 app.use("/api/study", require("./routes/study"));
 app.use("/api/workout", require("./routes/workout"));
 app.use("/api/analytics", require("./routes/analytics"));
+app.use("/api/milestones", require("./routes/milestones"));
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -75,9 +82,11 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server started on Port: ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-});
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT, () => {
+    console.log(`Server started on Port: ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+  });
+}
 
 module.exports = app;

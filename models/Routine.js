@@ -8,6 +8,7 @@ const routineSchema = new mongoose.Schema(
       required: true,
     },
     date: { type: String, required: true }, // YYYY-MM-DD format
+    name: { type: String, default: "Daily" },
     tasks: [
       {
         time: { type: String },
@@ -27,6 +28,6 @@ const routineSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-routineSchema.index({ userId: 1, date: 1 }, { unique: true });
+routineSchema.index({ userId: 1, date: 1, name: 1 }, { unique: true });
 
 module.exports = mongoose.model("Routine", routineSchema);

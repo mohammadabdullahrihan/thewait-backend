@@ -26,10 +26,18 @@ const habitSchema = new mongoose.Schema(
 habitSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 // Calculate habit score middleware
-habitSchema.pre("save", function (next) {
-  const h = this.habits;
-  this.habitScore = Object.values(h).filter(Boolean).length;
-  next();
+habitSchema.pre("save", function () {
+  const h = this.habits || {};
+  const values = [
+    h.wakeUp6am,
+    h.workout,
+    h.study,
+    h.noFap,
+    h.noCartoon,
+    h.sleep10pm,
+    h.journal,
+  ];
+  this.habitScore = values.filter(Boolean).length;
 });
 
 module.exports = mongoose.model("Habit", habitSchema);

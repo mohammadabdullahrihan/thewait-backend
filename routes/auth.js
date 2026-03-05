@@ -115,7 +115,7 @@ router.put("/profile", protect, async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { name, age, goal },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     res.json({ success: true, user });
   } catch (error) {
