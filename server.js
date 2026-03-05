@@ -19,9 +19,11 @@ app.use(async (req, res, next) => {
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL
-      ? process.env.FRONTEND_URL.split(",")
-      : "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://thewait.netlify.app",
+      ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",") : []),
+    ],
     credentials: true,
   }),
 );
