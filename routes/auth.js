@@ -111,10 +111,10 @@ router.get("/me", protect, async (req, res) => {
 // @route   PUT /api/auth/profile
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { name, age, goal } = req.body;
+    const { name, age, goal, activeRoutineName } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { name, age, goal },
+      { name, age, goal, activeRoutineName },
       { returnDocument: "after", runValidators: true },
     );
     res.json({ success: true, user });

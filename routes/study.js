@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const StudyProgress = require("../models/StudyProgress");
 const { protect } = require("../middleware/auth");
+const { syncTaskFromAction } = require("../utils/routineSync");
 
 // @route   GET /api/study
 router.get("/", protect, async (req, res) => {
@@ -58,6 +59,11 @@ router.post("/:subject/session", protect, async (req, res) => {
     });
     progress.totalHours += duration / 60;
     await progress.save();
+
+    // Auto-sync with Routine (Mark 'Study' tasks as completed)
+    const sessionDate = date || new Date().toISOString().split("T")[0];
+    await syncTaskFromAction(req.user.id, sessionDate, "Study");
+
     res.json({
       success: true,
       progress,

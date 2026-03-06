@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const Workout = require("../models/Workout");
 const { protect } = require("../middleware/auth");
+const { syncTaskFromAction } = require("../utils/routineSync");
 
 // @route   GET /api/workout/:date
 router.get("/:date", protect, async (req, res) => {
@@ -30,6 +31,10 @@ router.post("/", protect, async (req, res) => {
       caloriesBurned,
       notes,
     });
+
+    // Auto-sync with Routine (Mark 'Health' tasks as completed)
+    await syncTaskFromAction(req.user.id, date, "Health");
+
     res
       .status(201)
       .json({ success: true, workout, message: "💪 ওয়ার্কআউট লগ করা হয়েছে" });

@@ -7,17 +7,145 @@ const { protect } = require("../middleware/auth");
 // @route   GET /api/routines/:date
 router.get("/:date", protect, async (req, res) => {
   try {
-    const { name } = req.query;
+    const routineName = req.query.name || "Daily";
     let routine = await Routine.findOne({
       userId: req.user.id,
       date: req.params.date,
-      name: name || "Daily",
+      name: routineName,
     });
     if (!routine) {
-      // Return default template routine
-      routine = {
-        date: req.params.date,
-        tasks: [
+      let tasks = [];
+      if (routineName === "Ramadan" || routineName === "রমজান") {
+        tasks = [
+          {
+            time: "4:00 AM",
+            task: "সেহরির জন্য ওঠা",
+            category: "Discipline",
+            completed: false,
+          },
+          {
+            time: "4:20 AM",
+            task: "সেহরি খাওয়া",
+            category: "Health",
+            completed: false,
+          },
+          {
+            time: "4:40 AM",
+            task: "তাহাজ্জুদ ও দোয়া",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "5:00 AM",
+            task: "ফজরের নামাজ",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "5:30 AM",
+            task: "কোরআন তিলাওয়াত",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "6:00 AM",
+            task: "প্রধান ঘুম (৪ ঘণ্টা)",
+            category: "Health",
+            completed: false,
+          },
+          {
+            time: "10:00 AM",
+            task: "উঠে নতুন দিন শুরু",
+            category: "Discipline",
+            completed: false,
+          },
+          {
+            time: "11:00 AM",
+            task: "পড়া সেশন ১ (GED/IELTS)",
+            category: "Study",
+            completed: false,
+          },
+          {
+            time: "12:00 PM",
+            task: "ঘরের কাজ / পরিবারকে সাহায্য",
+            category: "Other",
+            completed: false,
+          },
+          {
+            time: "1:00 PM",
+            task: "পড়া সেশন ২ (GED/IELTS)",
+            category: "Study",
+            completed: false,
+          },
+          {
+            time: "2:00 PM",
+            task: "দুপুরের বিশ্রাম (নো মোবাইল)",
+            category: "Health",
+            completed: false,
+          },
+          {
+            time: "3:00 PM",
+            task: "ইবাদত / কোরআন তিলাওয়াত",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "4:00 PM",
+            task: "পড়া সেশন ৩ (GED/IELTS)",
+            category: "Study",
+            completed: false,
+          },
+          {
+            time: "5:00 PM",
+            task: "ইফতারির প্রস্তুতি",
+            category: "Other",
+            completed: false,
+          },
+          {
+            time: "6:00 PM",
+            task: "ইফতার",
+            category: "Health",
+            completed: false,
+          },
+          {
+            time: "6:30 PM",
+            task: "মাগরিবের নামাজ",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "7:00 PM",
+            task: "এশা ও তারাবীহ (মসজিদ)",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "8:00 PM",
+            task: "ডিনার ও বিশ্রামের সময়",
+            category: "Health",
+            completed: false,
+          },
+          {
+            time: "9:00 PM",
+            task: "পড়া সেশন ৪ (রিভিশন)",
+            category: "Study",
+            completed: false,
+          },
+          {
+            time: "9:30 PM",
+            task: "ডায়েরি লেখা ও ট্র্যাকিং",
+            category: "Mindfulness",
+            completed: false,
+          },
+          {
+            time: "10:00 PM",
+            task: "ঘুম (টার্গেট)",
+            category: "Discipline",
+            completed: false,
+          },
+        ];
+      } else {
+        tasks = [
           {
             time: "6:00 AM",
             task: "ঘুম থেকে ওঠা ও কোল্ড শাওয়ার",
@@ -90,11 +218,16 @@ router.get("/:date", protect, async (req, res) => {
             category: "Discipline",
             completed: false,
           },
-        ],
+        ];
+      }
+      routine = {
+        date: req.params.date,
+        tasks,
         completionRate: 0,
+        name: routineName,
       };
     }
-    res.json({ success: true, routine });
+    res.json({ success: true, routine, routineName });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -235,6 +368,21 @@ router.get("/week/:startDate", protect, async (req, res) => {
       date: { $in: dates },
     });
     res.json({ success: true, routines, dates });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   DELETE /api/routines/:date
+router.delete("/:date", protect, async (req, res) => {
+  try {
+    const { name } = req.query;
+    await Routine.deleteOne({
+      userId: req.user.id,
+      date: req.params.date,
+      name: name || "Daily",
+    });
+    res.json({ success: true, message: "রুটিন পুরোপুরি মুছে ফেলা হয়েছে" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

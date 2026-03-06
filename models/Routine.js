@@ -15,7 +15,14 @@ const routineSchema = new mongoose.Schema(
         task: { type: String, required: true },
         category: {
           type: String,
-          enum: ["Discipline", "Study", "Health", "Mindfulness", "Other"],
+          enum: [
+            "Discipline",
+            "Study",
+            "Health",
+            "Mindfulness",
+            "Ibadat",
+            "Other",
+          ],
           default: "Other",
         },
         completed: { type: Boolean, default: false },

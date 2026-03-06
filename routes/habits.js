@@ -3,6 +3,7 @@ const router = express.Router();
 const Habit = require("../models/Habit");
 const User = require("../models/User");
 const { protect } = require("../middleware/auth");
+const { syncHabitsToRoutine } = require("../utils/routineSync");
 
 // @route   GET /api/habits/:date
 router.get("/:date", protect, async (req, res) => {
@@ -57,6 +58,14 @@ router.post("/:date", protect, async (req, res) => {
     await User.findByIdAndUpdate(req.user.id, {
       $inc: { experience: xpEarned },
     });
+
+    // Auto-sync with Routine (Mark relevant tasks as completed)
+    try {
+      await syncHabitsToRoutine(req.user.id, req.params.date, habits);
+    } catch (syncError) {
+      console.error("Error syncing habits to routine:", syncError);
+      // Continue processing even if sync fails, as it's not critical for habit saving
+    }
 
     // Check and update streak
     await updateStreak(req.user.id);

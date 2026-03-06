@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema(
     level: { type: Number, default: 1 },
     experience: { type: Number, default: 0 },
     totalBadges: { type: Number, default: 0 },
+    activeRoutineName: { type: String, default: "Daily" },
     badges: [
       {
         name: String,
