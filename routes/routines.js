@@ -388,4 +388,54 @@ router.delete("/:date", protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/routines/copy
+router.post("/copy", protect, async (req, res) => {
+  try {
+    const { sourceDate, targetDate, name } = req.body;
+    const routineName = name || "Daily";
+    const sourceRoutine = await Routine.findOne({
+      userId: req.user.id,
+      date: sourceDate,
+      name: routineName,
+    });
+
+    if (!sourceRoutine) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Source routine not found" });
+    }
+
+    let targetRoutine = await Routine.findOne({
+      userId: req.user.id,
+      date: targetDate,
+      name: routineName,
+    });
+
+    const newTasks = sourceRoutine.tasks.map((t) => ({
+      time: t.time,
+      task: t.task,
+      category: t.category,
+      completed: false,
+    }));
+
+    if (targetRoutine) {
+      targetRoutine.tasks = newTasks;
+      targetRoutine.completionRate = 0;
+      await targetRoutine.save();
+    } else {
+      targetRoutine = await Routine.create({
+        userId: req.user.id,
+        date: targetDate,
+        name: routineName,
+        tasks: newTasks,
+        completionRate: 0,
+      });
+    }
+
+    res.json({ success: true, routine: targetRoutine });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

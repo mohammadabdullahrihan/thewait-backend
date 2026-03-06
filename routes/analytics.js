@@ -171,4 +171,56 @@ router.get("/heatmap", protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/analytics/ai-insights
+router.get("/ai-insights", protect, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const now = new Date();
+    const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+
+    const routines = await Routine.find({ userId, date: { $gte: last7Days } });
+    const habits = await Habit.find({ userId, date: { $gte: last7Days } });
+
+    let insights = [];
+
+    const avgCompletion = routines.length
+      ? routines.reduce((acc, r) => acc + r.completionRate, 0) / routines.length
+      : 0;
+    if (avgCompletion < 50) {
+      insights.push(
+        "আপনার রুটিন কমপ্লিশন রেট ৫০% এর নিচে। হয়তো আপনি একসাথে অনেক বেশি টাস্ক রাখছেন, প্রায়োরিটিতে ফোকাস করুন।",
+      );
+    } else if (avgCompletion >= 80) {
+      insights.push(
+        "দারুণ! আপনার রুটিন ফলো করার রেট খুব ভালো। এভাবেই চালিয়ে যান।",
+      );
+    }
+
+    const avgHabit = habits.length
+      ? habits.reduce((acc, h) => acc + h.habitScore, 0) / habits.length
+      : 0;
+    if (avgHabit < 3) {
+      insights.push(
+        "গত কয়েকদিন ধরে আপনার হ্যাবিট স্কোর কম। কোন হ্যাবিটগুলো মিস হচ্ছে সেগুলো বের করে কাজ করুন।",
+      );
+    } else if (avgHabit >= 5) {
+      insights.push(
+        "আপনার হ্যাবিটগুলো খুব সুন্দরভাবে মেইনটেইন হচ্ছে। এটি আপনাকে লং-টার্মে অনেক এগিয়ে নিবে!",
+      );
+    }
+
+    if (insights.length === 0) {
+      insights.push("তুমি সঠিক পথে আছো ওয়ারিয়র! নিজের শৃঙ্খলায় অটুট থাকো।");
+    }
+
+    const randomInsight = insights[Math.floor(Math.random() * insights.length)];
+
+    res.json({ success: true, insight: randomInsight });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
