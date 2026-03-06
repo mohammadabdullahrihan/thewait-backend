@@ -21,6 +21,20 @@ const workoutSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    muscleGroup: {
+      type: String,
+      enum: [
+        "Chest",
+        "Back",
+        "Legs",
+        "Shoulders",
+        "Arms",
+        "Core",
+        "Full Body",
+        "None",
+      ],
+      default: "None",
+    },
     exercises: [
       {
         name: { type: String, required: true },

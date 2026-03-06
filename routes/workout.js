@@ -6,12 +6,18 @@ const { syncTaskFromAction } = require("../utils/routineSync");
 
 // @route   GET /api/workout/:date
 router.get("/:date", protect, async (req, res) => {
+  if (req.params.date === "history") {
+    return res
+      .status(400)
+      .json({ success: false, message: "Use /history/:days route" });
+  }
   try {
     const workouts = await Workout.find({
       userId: req.user.id,
       date: req.params.date,
     });
-    res.json({ success: true, workouts });
+    // For dashboard compat - return first as .workout too
+    res.json({ success: true, workouts, workout: workouts[0] || null });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -20,12 +26,20 @@ router.get("/:date", protect, async (req, res) => {
 // @route   POST /api/workout
 router.post("/", protect, async (req, res) => {
   try {
-    const { date, type, exercises, totalDuration, caloriesBurned, notes } =
-      req.body;
+    const {
+      date,
+      type,
+      muscleGroup,
+      exercises,
+      totalDuration,
+      caloriesBurned,
+      notes,
+    } = req.body;
     const workout = await Workout.create({
       userId: req.user.id,
       date,
       type,
+      muscleGroup: muscleGroup || "None",
       exercises,
       totalDuration,
       caloriesBurned,
@@ -54,6 +68,37 @@ router.get("/history/:days", protect, async (req, res) => {
       date: { $gte: startDate.toISOString().split("T")[0] },
     }).sort({ date: -1 });
     res.json({ success: true, workouts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// @route   GET /api/workout/muscle/stats - Muscle group weekly stats
+router.get("/muscle/stats", protect, async (req, res) => {
+  try {
+    const days = 7;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    const workouts = await Workout.find({
+      userId: req.user.id,
+      date: { $gte: startDate.toISOString().split("T")[0] },
+    }).select("muscleGroup totalDuration date");
+
+    const stats = {};
+    workouts.forEach((w) => {
+      const group = w.muscleGroup || "None";
+      if (!stats[group]) stats[group] = { count: 0, minutes: 0 };
+      stats[group].count += 1;
+      stats[group].minutes += w.totalDuration || 0;
+    });
+
+    const result = Object.entries(stats).map(([group, data]) => ({
+      group,
+      sessions: data.count,
+      minutes: data.minutes,
+    }));
+
+    res.json({ success: true, muscleStats: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

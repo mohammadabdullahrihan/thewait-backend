@@ -35,14 +35,24 @@ const userSchema = new mongoose.Schema(
     experience: { type: Number, default: 0 },
     totalBadges: { type: Number, default: 0 },
     activeRoutineName: { type: String, default: "Daily" },
+    // Gamification
     badges: [
       {
+        id: String,
         name: String,
         icon: String,
         earnedAt: Date,
         description: String,
+        rarity: {
+          type: String,
+          enum: ["common", "rare", "epic", "legendary"],
+          default: "common",
+        },
       },
     ],
+    // Focus / Warrior Mode
+    focusMode: { type: Boolean, default: false },
+    totalFocusMinutes: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

@@ -14,6 +14,8 @@ const journalSchema = new mongoose.Schema(
     gratitude: { type: String, default: "" },
     mood: { type: Number, min: 1, max: 10, default: 5 },
     freeWrite: { type: String, default: "" },
+    tags: [{ type: String, trim: true }], // e.g. ["success", "learning", "struggle"]
+    photoUrl: { type: String, default: "" }, // base64 or URL
   },
   { timestamps: true },
 );
